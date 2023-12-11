@@ -7,7 +7,7 @@ async def get_random_cocktail():
 	url_1 = "https://www.thecocktaildb.com/api/json/v1/1/random.php"
 	url_2 = "https://www.thecocktaildb.com/api/json/v2/1/random.php"
 
-	response = requests.get(url=url_1)
+	response = requests.get(url=url_2)
 	response = response.json()['drinks'][0]
 
 	result['name'] = response['strDrink']
@@ -30,3 +30,11 @@ async def get_random_cocktail():
 	
 	return result
 
+async def fetch_ingredients():
+    
+    url = 'https://www.thecocktaildb.com/api/json/v2/1/list.php?i=list'
+    
+    response = requests.get(url=url)
+    data = response.json()['drinks']
+    
+    return data

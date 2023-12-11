@@ -1,16 +1,5 @@
-from easygoogletranslate import EasyGoogleTranslate
+from deep_translator import ChatGptTranslator
 
-translator = EasyGoogleTranslate(
-    source_language='en',
-    target_language='uk',
-    timeout=10
-)
-result = translator.translate("""
-• Brandy : 2 oz 
-• Egg : 1 whole 
-• Sugar : 1 tsp superfine 
-• Light cream : 1/2 oz 
-• Nutmeg : 1/8 tsp grated """)
+translator = ChatGptTranslator(source='en', target='uk', use_free_api=True)
 
-print(result) 
-# Output: Dies ist ein Beispiel.
+print(translator.translate("Layer in a 2 oz shot glass or pony glass"))

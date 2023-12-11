@@ -8,10 +8,6 @@ from handlers.callback_handlers import router as callback_router
 from handlers.command_handlers import router as command_router
 from handlers.message_handlers import router as message_router
 
-Bot_token = str(config("TOKEN"))
-
-
-
 dp = Dispatcher()
 router = Router()
 
@@ -25,7 +21,8 @@ dp.include_routers(
 async def main() -> None:
     bot = Bot(config("TOKEN"), parse_mode="HTML")
     commands = [
-        types.BotCommand(command="/start", description="Start command"),
+        types.BotCommand(command="/start", description="Запуск бота"),
+        types.BotCommand(command="/favourite", description="Улюблені коктейлі")
     ]
     await bot.set_my_commands(commands)
     await bot.delete_webhook(drop_pending_updates=True)

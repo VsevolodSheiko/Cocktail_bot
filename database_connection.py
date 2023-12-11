@@ -1,6 +1,5 @@
-from peewee import SqliteDatabase, Model, CharField, IntegerField
+from peewee import SqliteDatabase, Model, CharField, BigIntegerField, PrimaryKeyField
 
-# Define your database - replace 'example.db' with your desired database name
 db = SqliteDatabase('db.sqlite3')
 
 # Define a base model class that other models will inherit from
@@ -10,51 +9,54 @@ class BaseModel(Model):
 
 
 class Cocktail(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = PrimaryKeyField()
+    telegram_id = BigIntegerField()
     name = CharField()
-    difficulty = CharField()
-    portion = CharField()
-    method = CharField()
+    recipe = CharField(null=True)
+    photo = CharField(null=True)
     ingredients = CharField()
-    photo = CharField()
 
 
-def insert_cocktail(id, name, difficulty, portion, method, ingredients, photo):
+def insert_cocktail(telegram_id, name, recipe, photo, ingredients):
     db.connect()
 
-    Cocktail.create(id=id, name=name, difficulty=difficulty, portion=portion, method=method, ingredients=ingredients, photo=photo)
+    Cocktail.create(telegram_id=telegram_id, name=name, recipe=recipe, photo=photo, ingredients=ingredients)
+    
     db.commit()
     db.close()
 
 
-def get_cocktail(id):
+def get_favourite_cocktails(telegram_id):
     db.connect()
-    cocktail = Cocktail.get_or_none(Cocktail.id == id)
+    result = []
+    cocktails = Cocktail.select().where(Cocktail.telegram_id == telegram_id)
+    for cocktail in cocktails:
+        result.append({
+            "id": cocktail.id,
+            "telegram_id": cocktail.telegram_id,
+            "name": cocktail.name,
+            "recipe": cocktail.recipe,
+            "photo": cocktail.photo,
+            "ingredients": cocktail.ingredients 
+        })
     db.close()
     
-    return [
-        cocktail.id, cocktail.name, cocktail.difficulty, cocktail.portion, cocktail.method, cocktail.ingredients, cocktail.photo
-    ] if cocktail is not None else None
-
-
-def get_all_cocktails():
-    db.connect()
-
-    result = []
-    
-    cocktails = Cocktail.select()
-    
-    for cocktail in cocktails:
-        row = [
-            cocktail.name,
-            cocktail.difficulty,
-            cocktail.portion,
-            cocktail.method,
-            cocktail.ingredients,
-            cocktail.photo
-        ]
-        result.append(row)
     return result
+
+
+def delete_cocktail(id):
+    db.connect()
     
+    Cocktail.delete_by_id(id)
+    
+    db.commit()
+    db.close()
 
+def create_table():
+    db.connect()
+    
+    Cocktail.create_table()
+    
+    db.close()
 
+create_table()
