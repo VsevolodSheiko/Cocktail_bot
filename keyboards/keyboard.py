@@ -1,4 +1,5 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
+from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
@@ -51,20 +52,45 @@ async def list_favourite_cocktails():
     return keyboard.adjust(1, 2).as_markup()
 
 
-async def ingredients_keyboard(current_page, ingredients_list):
-    
+async def ingredients_keyboard(current_page, ingredients_list, state: FSMContext=None):
     buttons_list = []
-    
+
+    if state != None:
+        buttons_status = await state.get_data()
+        if 'selected_buttons' in buttons_status:
+            buttons_status = buttons_status['selected_buttons']
+        else:
+           buttons_status = []
+    else:
+        buttons_status = []
+
     start_index = current_page * 8
     end_index = start_index + 8
 
     for ingredient in ingredients_list[start_index:end_index]:
         ingredient_name = ingredient['strIngredient1']
-        button = InlineKeyboardButton(text=ingredient_name, callback_data=f"ingredient_{ingredient_name}")
+        if ingredient_name in buttons_status:
+            button = InlineKeyboardButton(text=f'{ingredient_name} \U00002705', callback_data=f"ingredient_{ingredient_name}")
+        else:
+            button = InlineKeyboardButton(text=ingredient_name, callback_data=f"ingredient_{ingredient_name}")
+        
         buttons_list.append(button)
 
     buttons_list.append(InlineKeyboardButton(text="\U000023EA", callback_data="ingredients_previous_page"))
     buttons_list.append(InlineKeyboardButton(text="\U000023E9", callback_data="ingredients_next_page"))
+    buttons_list.append(InlineKeyboardButton(text="Знайти коктейль", callback_data="find_cocktail_from_ingredients"))
     keyboard = InlineKeyboardBuilder([buttons_list])
     
-    return keyboard.adjust(2, 2, 2, 2, 2).as_markup()
+    return keyboard.adjust(2, 2, 2, 2, 2, 1).as_markup()
+
+
+async def toggle_ingredient_button():
+    keyboard = InlineKeyboardBuilder(
+        [
+            [
+                InlineKeyboardButton(text="\U000023EA", callback_data=f"previous_page_cocktail"),
+                InlineKeyboardButton(text="\U000023E9", callback_data=f"next_page_cocktail")
+            ]
+        ]
+    )
+    return keyboard.adjust(2).as_markup()
