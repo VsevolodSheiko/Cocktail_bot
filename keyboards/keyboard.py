@@ -9,10 +9,23 @@ async def main_menu_keyboard():
             [
                 InlineKeyboardButton(text="Коктейль дня", callback_data=f"random_cocktail"),
                 InlineKeyboardButton(text="Коктейль з інгредієнтів", callback_data=f"cocktail_from_ingredients"),
+                InlineKeyboardButton(text="Додати свій коктейль", callback_data=f"add_cocktail"),
             ]
         ]
     )
     return keyboard.adjust(1).as_markup()
+
+
+async def user_add_cocktail_next_step():
+    keyboard = InlineKeyboardBuilder(
+        [
+            [
+                InlineKeyboardButton(text="Перейти до наступного кроку", callback_data=f"next_step"),
+            ]
+        ]
+    )
+    return keyboard.adjust(1).as_markup()
+
 
 
 async def continue_search_keyboard():
@@ -21,7 +34,6 @@ async def continue_search_keyboard():
             [
                 InlineKeyboardButton(text="Наступний", callback_data=f"next_cocktail"),
                 InlineKeyboardButton(text="Зберегти", callback_data=f"save_cocktail"),
-                
             ]
         ]
     )

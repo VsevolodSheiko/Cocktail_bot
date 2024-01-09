@@ -14,7 +14,8 @@ router = Router()
 
 dp.include_routers(
     callback_router,
-    command_router
+    command_router,
+    message_router
 )
 
 

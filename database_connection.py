@@ -1,4 +1,4 @@
-from peewee import SqliteDatabase, Model, CharField, BigIntegerField, PrimaryKeyField
+from peewee import SqliteDatabase, Model, CharField, BigIntegerField, PrimaryKeyField, BooleanField
 
 db = SqliteDatabase('db.sqlite3')
 
@@ -15,12 +15,18 @@ class Cocktail(BaseModel):
     recipe = CharField(null=True)
     photo = CharField(null=True)
     ingredients = CharField()
+    created_by_user = BooleanField()
 
 
-def insert_cocktail(telegram_id, name, recipe, photo, ingredients):
+def insert_cocktail(telegram_id, name, recipe, photo, ingredients, created_by_user=False):
     db.connect()
 
-    Cocktail.create(telegram_id=telegram_id, name=name, recipe=recipe, photo=photo, ingredients=ingredients)
+    Cocktail.create(telegram_id=telegram_id, 
+                    name=name,
+                    recipe=recipe,
+                    photo=photo,
+                    ingredients=ingredients,
+                    created_by_user=created_by_user)
     
     db.commit()
     db.close()
@@ -52,11 +58,13 @@ def delete_cocktail(id):
     db.commit()
     db.close()
 
+
 def create_table():
     db.connect()
     
     Cocktail.create_table()
     
     db.close()
+
 
 create_table()

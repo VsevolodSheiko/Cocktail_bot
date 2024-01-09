@@ -11,7 +11,8 @@ from database_connection import insert_cocktail, delete_cocktail, get_favourite_
 from .other_functions import format_ingredient_list
 from keyboards.keyboard import continue_search_keyboard, \
     change_generate_cocktail_button, list_favourite_cocktails, \
-    ingredients_keyboard, main_menu_keyboard
+    ingredients_keyboard, main_menu_keyboard, user_add_cocktail_next_step
+    
 from states.user_states import UserStates
 
 router = Router()
@@ -82,6 +83,18 @@ async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
     
     else:
         await callback_query.answer('Ви вже додали цей коктейль до улюблених')
+
+
+@router.callback_query(lambda callback: callback.data == 'add_cocktail')
+async def add_user_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    
+    await callback_query.message.edit_text('Надішліть фото вашого коктейлю. Якщо фото немає, перейдіть до наступного кроку.', 
+                                           reply_markup=await user_add_cocktail_next_step())
+    await state.set_data({'user_cocktail': {}})
+    await state.set_state(UserStates.user_add_cocktail_photo)
+    
+    await callback_query.answer()
 
 
 @router.callback_query(UserStates.fav_cocktails, lambda callback: callback.data in ("next_page", "previous_page"))
