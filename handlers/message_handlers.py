@@ -23,7 +23,7 @@ async def get_photo_from_user(message: types.Message, state: FSMContext):
     
 
 @router.message(UserStates.user_add_cocktail_name)
-async def get_photo_from_user(message: types.Message, state: FSMContext):
+async def get_name_from_user(message: types.Message, state: FSMContext):
     data = await state.get_data()
     
     cocktail = data['user_cocktail']
@@ -36,7 +36,7 @@ async def get_photo_from_user(message: types.Message, state: FSMContext):
 
     
 @router.message(UserStates.user_add_cocktail_ingredients)
-async def get_photo_from_user(message: types.Message, state: FSMContext):
+async def get_ingedients_from_user(message: types.Message, state: FSMContext):
     data = await state.get_data()
     
     cocktail = data['user_cocktail']
@@ -49,7 +49,7 @@ async def get_photo_from_user(message: types.Message, state: FSMContext):
 
 
 @router.message(UserStates.user_add_cocktail_recipe)
-async def get_photo_from_user(message: types.Message, state: FSMContext):
+async def get_description_from_user(message: types.Message, state: FSMContext):
     data = await state.get_data()
     
     cocktail = data['user_cocktail']
@@ -64,8 +64,16 @@ async def get_photo_from_user(message: types.Message, state: FSMContext):
         cocktail['ingredients'],
         created_by_user=True
     )
-    await send_favourite_cocktail(message, state)
-    await message.answer("Ви успішно додали коктейль! Щоб переглянути його, ")
+    media_photo = types.InputMediaPhoto(media=cocktail['photo'])
+    text = f"""
+&#127864; Коктейль: {cocktail["name"]}\n
+Склад: 
+{cocktail["ingredients"]}\n
+Як приготувати: {cocktail["recipe"]}
+"""
+    await message.answer_media_group([media_photo])
+    await message.answer(text)
+    await message.answer("Ви успішно додали коктейль! Він був збережений у /favourite.")
     await message.answer('Щось пішло не так... Спробуйте знову додати коктейль, або поверніться трішки пізніше.')
     
     

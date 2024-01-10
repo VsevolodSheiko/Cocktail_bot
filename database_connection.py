@@ -43,7 +43,8 @@ def get_favourite_cocktails(telegram_id):
             "name": cocktail.name,
             "recipe": cocktail.recipe,
             "photo": cocktail.photo,
-            "ingredients": cocktail.ingredients 
+            "ingredients": cocktail.ingredients,
+            "created_by_user": cocktail.created_by_user
         })
     db.close()
     

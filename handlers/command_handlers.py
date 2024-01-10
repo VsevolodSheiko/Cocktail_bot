@@ -23,13 +23,18 @@ async def send_favourite_cocktail(message: types.Message, state: FSMContext):
     page = 0
     
     cocktails = get_favourite_cocktails(message.from_user.id)
+    print(cocktails)
     if len(cocktails) > 0:
     
         await state.set_state(UserStates.fav_cocktails)
         await state.set_data({"page": page,
                             "cocktails": cocktails})
         
-        media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
+        if cocktails[page]['created_by_user'] == True:
+            if cocktails[page]['photo'] is not None:
+                media_photo = types.InputMediaPhoto(media=cocktails[page]['photo'])
+        else:
+            media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
         
         inline_photo_id = await message.answer_media_group([media_photo])
         inline_photo_id = inline_photo_id[0].message_id

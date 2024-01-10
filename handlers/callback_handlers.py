@@ -12,14 +12,14 @@ from .other_functions import format_ingredient_list
 from keyboards.keyboard import continue_search_keyboard, \
     change_generate_cocktail_button, list_favourite_cocktails, \
     ingredients_keyboard, main_menu_keyboard, user_add_cocktail_next_step
-    
+
+from .message_handlers import get_photo_from_user, get_name_from_user, get_ingedients_from_user, get_description_from_user
 from states.user_states import UserStates
 
 router = Router()
 bot = Bot(config("TOKEN"), parse_mode="HTML")
 
 async def send_cocktail(cocktail_to_send: list, callback_query: types.CallbackQuery, state: FSMContext):
-    print(cocktail_to_send)
     inline_message_id = callback_query.inline_message_id
     await callback_query.message.edit_reply_markup(inline_message_id, await change_generate_cocktail_button())
     ingredients = await format_ingredient_list(cocktail_to_send["ingredients"])
@@ -97,6 +97,16 @@ async def add_user_cocktail(callback_query: types.CallbackQuery, state: FSMConte
     await callback_query.answer()
 
 
+@router.callback_query(lambda callback: callback.data == 'next_step')
+async def go_to_next_step_in_user_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
+    steps_list = [get_photo_from_user, get]
+    await callback_query.message.edit_text('Надішліть фото вашого коктейлю. Якщо фото немає, перейдіть до наступного кроку.', 
+                                           reply_markup=await user_add_cocktail_next_step())
+    await state.set_data({'user_cocktail': {}})
+    await state.set_state(UserStates.user_add_cocktail_photo)
+    await callback_query.answer()
+
+
 @router.callback_query(UserStates.fav_cocktails, lambda callback: callback.data in ("next_page", "previous_page"))
 async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -121,7 +131,11 @@ async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
 {cocktails[page]["ingredients"]}\n
 Як приготувати: {cocktails[page]["recipe"]}
 """
-        media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
+        if cocktails[page]['created_by_user'] == True:
+            if cocktails[page]['photo'] is not None:
+                media_photo = types.InputMediaPhoto(media=cocktails[page]['photo'])
+        else:
+            media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
         await state.update_data({'page': page})
         await bot.edit_message_media(media_photo, callback_query.from_user.id, inline_photo_id)
         await callback_query.message.edit_text(text=text, inline_message_id=inline_message_id, reply_markup=await list_favourite_cocktails())
