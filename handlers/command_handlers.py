@@ -33,7 +33,7 @@ async def send_favourite_cocktail(message: types.Message, state: FSMContext):
         if cocktails[page]['created_by_user'] == True:
             if cocktails[page]['photo'] is not None:
                 media_photo = types.InputMediaPhoto(media=cocktails[page]['photo'])
-        else:
+        elif cocktails[page]['photo'].startswith("https"):
             media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
         
         inline_photo_id = await message.answer_media_group([media_photo])

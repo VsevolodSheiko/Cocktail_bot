@@ -1,6 +1,6 @@
 from aiogram import Router, types, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.exceptions import AiogramError
+from aiogram.exceptions import AiogramError, TelegramBadRequest
 from decouple import config
 
 from queries.cocktail_queries import get_random_cocktail, fetch_ingredients, \
@@ -49,7 +49,6 @@ async def send_cocktail(cocktail_to_send: list, callback_query: types.CallbackQu
 async def handle_random_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
     if await state.get_state() == 'UserStates:cocktail_from_ingredients':
         data = await state.get_data()
-        print("handle_random_cocktail", data)
         cocktails_ids: list = data['cocktails_ids']
         if len(cocktails_ids) > 0:
             cocktail_to_send = await search_cocktail_by_id(cocktails_ids.pop(0))
@@ -99,16 +98,26 @@ async def add_user_cocktail(callback_query: types.CallbackQuery, state: FSMConte
 
 @router.callback_query(lambda callback: callback.data == 'next_step')
 async def go_to_next_step_in_user_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
-    steps_list = [get_photo_from_user, get]
-    await callback_query.message.edit_text('Надішліть фото вашого коктейлю. Якщо фото немає, перейдіть до наступного кроку.', 
-                                           reply_markup=await user_add_cocktail_next_step())
-    await state.set_data({'user_cocktail': {}})
-    await state.set_state(UserStates.user_add_cocktail_photo)
+    current_state = await state.get_state()
+    if current_state == "UserStates:user_add_cocktail_photo":
+        await state.set_state(UserStates.user_add_cocktail_name)
+        await get_photo_from_user(message=callback_query, state=state, skipped=True)
+        
+    elif current_state == "UserStates:user_add_cocktail_name":
+        await callback_query.answer('Ви не можете пропустити цей крок. Назва коктейлю є обов\'язковою')
+        
+    elif current_state == "UserStates:user_add_cocktail_ingredients":
+        await state.set_state(UserStates.user_add_cocktail_recipe)
+        await get_ingedients_from_user(message=callback_query, state=state, skipped=True)
+    
+    elif current_state == "UserStates:user_add_cocktail_recipe":
+        await get_description_from_user(message=callback_query, state=state, skipped=True)
     await callback_query.answer()
 
 
 @router.callback_query(UserStates.fav_cocktails, lambda callback: callback.data in ("next_page", "previous_page"))
 async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
+
     data = await state.get_data()
     page = data['page']
     cocktails = data['cocktails']
@@ -139,7 +148,8 @@ async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
         await state.update_data({'page': page})
         await bot.edit_message_media(media_photo, callback_query.from_user.id, inline_photo_id)
         await callback_query.message.edit_text(text=text, inline_message_id=inline_message_id, reply_markup=await list_favourite_cocktails())
-    
+    #except TelegramBadRequest:
+     #   await callback_query.answer('Виникла помилка, спробуйте використати інші кнопки.')
 
     await callback_query.answer()
 
