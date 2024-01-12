@@ -104,11 +104,10 @@ async def go_to_next_step_in_user_cocktail(callback_query: types.CallbackQuery, 
         await get_photo_from_user(message=callback_query, state=state, skipped=True)
         
     elif current_state == "UserStates:user_add_cocktail_name":
-        await callback_query.answer('Ви не можете пропустити цей крок. Назва коктейлю є обов\'язковою')
+        await callback_query.answer('Назва коктейлю є обов\'язковою')
         
     elif current_state == "UserStates:user_add_cocktail_ingredients":
-        await state.set_state(UserStates.user_add_cocktail_recipe)
-        await get_ingedients_from_user(message=callback_query, state=state, skipped=True)
+        await callback_query.answer('Інгредієнти є обов\'язковими')
     
     elif current_state == "UserStates:user_add_cocktail_recipe":
         await get_description_from_user(message=callback_query, state=state, skipped=True)
@@ -143,7 +142,9 @@ async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
         if cocktails[page]['created_by_user'] == True:
             if cocktails[page]['photo'] is not None:
                 media_photo = types.InputMediaPhoto(media=cocktails[page]['photo'])
-        else:
+            else:
+                media_photo = types.InputMediaPhoto(media=types.FSInputFile("no_cocktail_photo.png"))
+        elif cocktails[page]['photo'].startswith("https"):
             media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
         await state.update_data({'page': page})
         await bot.edit_message_media(media_photo, callback_query.from_user.id, inline_photo_id)
@@ -161,35 +162,41 @@ async def delete_favourite_cocktail(callback_query: types.CallbackQuery, state: 
     page = data['page']
     cocktail_id = data['cocktails'][page]['id']
     
-    try:
-        delete_cocktail(cocktail_id)
-        cocktails = get_favourite_cocktails(callback_query.from_user.id)
-        await state.update_data({"cocktails": cocktails})
-        await callback_query.answer("Ви успішно видалили коктейль.")
+    # try:
+    delete_cocktail(cocktail_id)
+    cocktails = get_favourite_cocktails(callback_query.from_user.id)
+    await state.update_data({"cocktails": cocktails})
+    await callback_query.answer("Ви успішно видалили коктейль.")
 
-        inline_photo_id = str(data['inline_photo_id'])
-        inline_message_id = str(data['inline_message_id'])
+    inline_photo_id = str(data['inline_photo_id'])
+    inline_message_id = str(data['inline_message_id'])
+    
+    if len(cocktails) == 0:
+        await bot.delete_message(callback_query.from_user.id, inline_photo_id)
+        await bot.delete_message(callback_query.from_user.id, inline_message_id)
+    else:
         
-        if len(cocktails) == 0:
-            await bot.delete_message(callback_query.from_user.id, inline_photo_id)
-            await bot.delete_message(callback_query.from_user.id, inline_message_id)
-        else:
-            
-            page -= 1
+        page -= 1
+        if cocktails[page]['created_by_user'] == True:
+            if cocktails[page]['photo'] is not None:
+                media_photo = types.InputMediaPhoto(media=cocktails[page]['photo'])
+            else:
+                media_photo = types.InputMediaPhoto(media=types.FSInputFile("no_cocktail_photo.png"))
+        elif cocktails[page]['photo'].startswith("https"):
             media_photo = types.InputMediaPhoto(media=types.URLInputFile(cocktails[page]['photo']))
-            await state.update_data({'page': page})
-            await bot.edit_message_media(media_photo, callback_query.from_user.id, inline_photo_id)
-            text = f"""
+        await state.update_data({'page': page})
+        await bot.edit_message_media(media_photo, callback_query.from_user.id, inline_photo_id)
+        text = f"""
 &#127864; Коктейль: {cocktails[page]["name"]}\n
 Склад: 
 {cocktails[page]["ingredients"]}\n
 Як приготувати: {cocktails[page]["recipe"]}
 """
-            await callback_query.message.edit_text(text=text,
-                                                inline_message_id=inline_message_id,
-                                                reply_markup=await list_favourite_cocktails())
-    except AiogramError:
-        await callback_query.message.answer("Виникла помилка. Спробуйте ще раз або пізніше.")
+        await callback_query.message.edit_text(text=text,
+                                            inline_message_id=inline_message_id,
+                                            reply_markup=await list_favourite_cocktails())
+    # except AiogramError:
+    #     await callback_query.message.answer("Виникла помилка. Спробуйте ще раз або пізніше.")
     
     await callback_query.answer()
     
