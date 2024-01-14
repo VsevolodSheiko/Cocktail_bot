@@ -1,5 +1,9 @@
+import subprocess
+
 from fractions import Fraction
 from queries.translate_queries import translate_text
+from aiogram import Bot
+from decouple import config
 
 async def convert_oz_to_ml(oz_amount):
     try:
@@ -16,6 +20,7 @@ async def convert_oz_to_ml(oz_amount):
         except ValueError:
             # If it's neither a float nor a valid fraction, return the original value
             return oz_amount
+
 
 async def format_ingredient_list(ingredient_list):
     formatted_list = []
@@ -39,3 +44,22 @@ async def format_ingredient_list(ingredient_list):
 
     formatted_string = "\n".join(formatted_list)
     return formatted_string
+
+
+async def database_backup():
+
+    bot = Bot(config("TOKEN"), parse_mode="HTML")
+
+    # Command to run
+    command = ['sqlite3', 'db.sqlite3', '.dump']
+
+    # Run the command and capture the output
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    # Write the output to a file
+    with open('backup.sql', 'w') as file:
+        file.write(result.stdout)
+        await bot.send_document(config("DEVELOPER_ID"), file)
+
+    # Print the return code of the command
+    print("Return Code:", result.returncode)

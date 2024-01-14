@@ -2,11 +2,14 @@ from decouple import config
 import asyncio
 
 import logging
+
 from aiogram import Bot, Dispatcher, Router, types
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from handlers.callback_handlers import router as callback_router
 from handlers.command_handlers import router as command_router
 from handlers.message_handlers import router as message_router
+from handlers.other_functions import database_backup
 
 dp = Dispatcher()
 router = Router()
@@ -31,6 +34,12 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(database_backup, "cron", hour=23, minute=20)
+    scheduler.add_job(database_backup, "interval", seconds=5)
+    scheduler.start()
+    
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
 
