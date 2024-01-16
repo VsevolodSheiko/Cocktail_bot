@@ -24,7 +24,7 @@ dp.include_routers(
 
 async def main() -> None:
     
-    bot = Bot('6832185447:AAGz1JQ3FWvxeWSl_cFMv5wmDXyhHBeQUKU', parse_mode="HTML")
+    bot = Bot(config("TOKEN"), parse_mode="HTML")
     commands = [
         types.BotCommand(command="/start", description="Запуск бота"),
         types.BotCommand(command="/favourite", description="Улюблені коктейлі")
