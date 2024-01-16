@@ -1,7 +1,10 @@
 db.sqlite3
 .env
 backup.sql
-/__pycache__
+__pycache__/
+venv/
+
+
 
 
 
