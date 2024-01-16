@@ -5,7 +5,6 @@ from aiogram.filters import CommandStart, Command
 from states.user_states import UserStates
 from keyboards.keyboard import main_menu_keyboard, list_favourite_cocktails
 from database_connection import get_favourite_cocktails
-from aiogram.types.input_media_photo import InputMediaPhoto
 
 
 router = Router()
@@ -23,7 +22,6 @@ async def send_favourite_cocktail(message: types.Message, state: FSMContext):
     page = 0
     
     cocktails = get_favourite_cocktails(message.from_user.id)
-    print(cocktails)
     if len(cocktails) > 0:
     
         await state.set_state(UserStates.fav_cocktails)

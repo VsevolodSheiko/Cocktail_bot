@@ -1,2 +1,6 @@
 db.sqlite3
 .env
+backup.sql
+/__pycache__/
+
+

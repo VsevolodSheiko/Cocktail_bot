@@ -1,9 +1,12 @@
 import subprocess
+import asyncio
 
 from fractions import Fraction
 from queries.translate_queries import translate_text
-from aiogram import Bot
+from aiogram import types
 from decouple import config
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from bot_config import bot
 
 async def convert_oz_to_ml(oz_amount):
     try:
@@ -46,12 +49,23 @@ async def format_ingredient_list(ingredient_list):
     return formatted_string
 
 
-async def database_backup():
+async def scheduler():
+    scheduler = AsyncIOScheduler()
 
-    bot = Bot(config("TOKEN"), parse_mode="HTML")
+    scheduler.add_job(database_backup, trigger='cron', hour=1)
+    scheduler.start()
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+
+
+async def database_backup() -> None:
 
     # Command to run
-    command = ['sqlite3', 'db.sqlite3', '.dump', '>', 'backup.sql']
+    command = ['sqlite3', 'db.sqlite3', '.dump > backup.sql']
 
     # Run the command and capture the output
     result = subprocess.run(command, capture_output=True, text=True)
@@ -59,7 +73,7 @@ async def database_backup():
     # Write the output to a file
     with open('backup.sql', 'w') as file:
         file.write(result.stdout)
-        await bot.send_document(config("DEVELOPER_ID"), file)
+    
+    await bot.send_document(config("DEVELOPER_ID"), types.FSInputFile('backup.sql'))
 
-    # Print the return code of the command
-    print("Return Code:", result.returncode)
+
