@@ -51,7 +51,7 @@ async def database_backup():
     bot = Bot(config("TOKEN"), parse_mode="HTML")
 
     # Command to run
-    command = ['sqlite3', 'db.sqlite3', '.dump']
+    command = ['sqlite3', 'db.sqlite3', '.dump', '>', 'backup.sql']
 
     # Run the command and capture the output
     result = subprocess.run(command, capture_output=True, text=True)

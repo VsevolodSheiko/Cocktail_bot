@@ -23,7 +23,8 @@ dp.include_routers(
 
 
 async def main() -> None:
-    bot = Bot(config("TOKEN"), parse_mode="HTML")
+    
+    bot = Bot('6832185447:AAGz1JQ3FWvxeWSl_cFMv5wmDXyhHBeQUKU', parse_mode="HTML")
     commands = [
         types.BotCommand(command="/start", description="Запуск бота"),
         types.BotCommand(command="/favourite", description="Улюблені коктейлі")
@@ -36,11 +37,13 @@ async def main() -> None:
 if __name__ == "__main__":
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(database_backup, "cron", hour=23, minute=20)
+    #scheduler.add_job(database_backup, "cron", hour=23, minute=20)
     scheduler.add_job(database_backup, "interval", seconds=5)
     scheduler.start()
     
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
+    
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
 
 
