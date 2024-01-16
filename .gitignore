@@ -3,6 +3,11 @@ db.sqlite3
 backup.sql
 __pycache__/
 venv/
+.vscode/
+
+
+
+
 
 
 
