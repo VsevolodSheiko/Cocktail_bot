@@ -76,8 +76,8 @@ async def ingredients_keyboard(current_page, ingredients_list, state: FSMContext
     else:
         buttons_status = []
 
-    start_index = current_page * 8
-    end_index = start_index + 8
+    start_index = current_page * 5
+    end_index = start_index + 5
 
     for ingredient in ingredients_list[start_index:end_index]:
         ingredient_name = ingredient['strIngredient1']
@@ -93,7 +93,7 @@ async def ingredients_keyboard(current_page, ingredients_list, state: FSMContext
     buttons_list.append(InlineKeyboardButton(text="Знайти коктейль", callback_data="find_cocktail_from_ingredients"))
     keyboard = InlineKeyboardBuilder([buttons_list])
     
-    return keyboard.adjust(2, 2, 2, 2, 2, 1).as_markup()
+    return keyboard.adjust(1, 1, 1, 1, 1, 2, 2).as_markup()
 
 
 async def toggle_ingredient_button():
