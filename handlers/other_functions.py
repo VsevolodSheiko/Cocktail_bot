@@ -52,7 +52,8 @@ async def format_ingredient_list(ingredient_list):
 async def scheduler():
     scheduler = AsyncIOScheduler()
 
-    scheduler.add_job(database_backup, trigger='cron', hour=1)
+    #scheduler.add_job(database_backup, trigger='cron', hour=1)
+    scheduler.add_job(database_backup, trigger='interval', seconds = 5)
     scheduler.start()
 
     try:

@@ -13,7 +13,7 @@ from keyboards.keyboard import continue_search_keyboard, \
     change_generate_cocktail_button, list_favourite_cocktails, \
     ingredients_keyboard, main_menu_keyboard, user_add_cocktail_next_step
 
-from .message_handlers import get_photo_from_user, get_name_from_user, get_ingedients_from_user, get_description_from_user
+from .message_handlers import get_photo_from_user, get_description_from_user, get_ingedients_from_user, get_name_from_user
 from states.user_states import UserStates
 
 router = Router()
@@ -62,6 +62,19 @@ async def handle_random_cocktail(callback_query: types.CallbackQuery, state: FSM
     inline_message_id = callback_query.inline_message_id
     await send_cocktail(cocktail_to_send, callback_query, state)
     await callback_query.message.delete_reply_markup(inline_message_id)
+
+
+@router.callback_query(lambda callback: callback.data == "main_menu")
+async def save_cocktail(callback_query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    print(data)
+    if 'inline_photo_id' in data:
+        inline_photo_id = data['inline_photo_id']
+        await bot.delete_message(callback_query.from_user.id, inline_photo_id)
+    await state.clear()
+    await callback_query.message.edit_text("Ви повернулись до головного меню", reply_markup=await main_menu_keyboard())
+    
+    await callback_query.answer()
 
 
 @router.callback_query(lambda callback: callback.data == "save_cocktail")
