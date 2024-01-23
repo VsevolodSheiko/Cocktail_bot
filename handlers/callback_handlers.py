@@ -238,8 +238,13 @@ async def make_cocktail_from_ingredients(callback_query: types.CallbackQuery, st
     fetched_ingredients = data['fetched_ingredients']
 
     if 'selected_buttons' in data.keys():
-        selected_buttons = data['selected_buttons']
-        selected_buttons.append(ingredient)
+        selected_buttons: list = data['selected_buttons']
+        if ingredient in selected_buttons:
+            # clear dublicates
+            new_buttons = [item for item in selected_buttons if item != ingredient]
+            selected_buttons = new_buttons
+        else:
+            selected_buttons.append(ingredient)
         await state.update_data({'selected_buttons': selected_buttons})
     else:
         await state.update_data({'selected_buttons': [ingredient]})
@@ -248,11 +253,16 @@ async def make_cocktail_from_ingredients(callback_query: types.CallbackQuery, st
     ingredients = [ingredient]
 
     if 'ingredients' in data.keys():
-        ingredients_from_data = data['ingredients']
+        ingredients_from_data: list = data['ingredients']
         for i in ingredients_from_data:
             ingredient = i.replace("ingredient_", "")
             ingredient = ingredient.replace(" ", "_")
-            ingredients.append(ingredient)
+            if ingredient in ingredients_from_data:
+                # clear dublicates in ingredients
+                new_buttons = [item for item in selected_buttons if item != ingredient]
+                ingredients = new_buttons
+            else:
+                ingredients.append(ingredient)
     
     await state.update_data({f'ingredients': ingredients})
     await callback_query.message.edit_reply_markup(reply_markup=await ingredients_keyboard(page, fetched_ingredients, state))
